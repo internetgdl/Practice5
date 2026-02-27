@@ -27,7 +27,25 @@ jobs:
         run: npm run build
         
       - name: Publish artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
+
+
+  release:
+    needs: deploy
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy dist/practice4/index.js --name floral-snow-a9d5 --compatibility-date 2026-02-26 --compatibility-flags nodejs_compat --assets dist/client
