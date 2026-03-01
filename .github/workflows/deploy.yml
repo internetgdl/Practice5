@@ -40,6 +40,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: dev
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -50,4 +52,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy dist/practice4/index.js --name floral-snow-a9d5 --compatibility-date 2026-02-26 --compatibility-flags nodejs_compat --assets dist/client
+          command: deploy dist/practice4/index.js -c wrangler.jsonc --name floral-snow-a9d5 --compatibility-date 2026-02-26 --compatibility-flags nodejs_compat --assets dist/client
