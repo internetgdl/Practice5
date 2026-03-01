@@ -12,8 +12,9 @@ export default function UserForm({ onSaved }: Props) {
     const [name, setName] = useState('')
     const [hobbies, setHobbies] = useState('')
     const [error, setError] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
 
-    function handleSubmit(e: React.FormEvent) {
+    async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         const validationError = validateUserInput(name, hobbies)
         if (validationError) {
@@ -21,9 +22,18 @@ export default function UserForm({ onSaved }: Props) {
             return
         }
         setError('')
-        onSaved(createUser(name, hobbies))
-        setName('')
-        setHobbies('')
+        setIsLoading(true)
+
+        try {
+            const newUser = await createUser(name, hobbies)
+            onSaved(newUser)
+            setName('')
+            setHobbies('')
+        } catch (err) {
+            setError('Failed to save profile. Please try again.')
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     return (
@@ -54,8 +64,8 @@ export default function UserForm({ onSaved }: Props) {
                     />
                 </div>
                 {error && <p className="form-error">{error}</p>}
-                <button type="submit" className="btn-primary">
-                    Save Profile
+                <button type="submit" className="btn-primary" disabled={isLoading}>
+                    {isLoading ? 'Saving...' : 'Save Profile'}
                 </button>
             </form>
         </div>

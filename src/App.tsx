@@ -1,19 +1,28 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import UserForm from './components/UserForm'
 import UserList from './components/UserList'
 import type { User } from './utils/userUtils'
-import { deleteUser } from './utils/userUtils'
+import { fetchUsers, deleteUser } from './utils/userUtils'
 import './App.css'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
 
+  useEffect(() => {
+    fetchUsers().then(setUsers).catch(console.error);
+  }, []);
+
   function handleSaved(user: User) {
     setUsers((prev) => [user, ...prev])
   }
 
-  function handleDelete(id: number) {
-    setUsers((prev) => deleteUser(prev, id))
+  async function handleDelete(id: number) {
+    try {
+      await deleteUser(id);
+      setUsers((prev) => prev.filter(u => u.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (

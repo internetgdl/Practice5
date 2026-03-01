@@ -16,4 +16,11 @@
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "practice6db",
+			"database_id": "8041f6eb-2bc7-43de-b053-4b58d1b9e028"
+		}
+	]
 }

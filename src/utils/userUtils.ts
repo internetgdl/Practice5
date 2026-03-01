@@ -5,8 +5,11 @@ export interface User {
     created_at: string
 }
 
-let _nextId = 1
-export function resetIdCounter() { _nextId = 1 } // exposed for tests
+export async function fetchUsers(): Promise<User[]> {
+    const res = await fetch('/api/users');
+    if (!res.ok) throw new Error('Failed to fetch users');
+    return res.json();
+}
 
 /**
  * Validates the user form inputs.
@@ -19,21 +22,22 @@ export function validateUserInput(name: string, hobbies: string): string | null 
 }
 
 /**
- * Creates a new User object from the given inputs.
- * Uses Date.now() for the id and new Date() for created_at.
+ * Creates a new User via the API.
  */
-export function createUser(name: string, hobbies: string): User {
-    return {
-        id: _nextId++,
-        name: name.trim(),
-        hobbies: hobbies.trim(),
-        created_at: new Date().toISOString(),
-    }
+export async function createUser(name: string, hobbies: string): Promise<User> {
+    const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), hobbies: hobbies.trim() })
+    });
+    if (!res.ok) throw new Error('Failed to create user');
+    return res.json();
 }
 
 /**
- * Removes a user from the list by id.
+ * Deletes a user via the API.
  */
-export function deleteUser(users: User[], id: number): User[] {
-    return users.filter((u) => u.id !== id)
+export async function deleteUser(id: number): Promise<void> {
+    const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete user');
 }
