@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "practice4",
+	"name": "floral-snow-a9d5",
 	"main": "worker/index.ts",
 	"compatibility_date": "2026-02-19",
 	"assets": {
