@@ -48,6 +48,10 @@ export default {
       });
     }
 
+    if (url.pathname === "/api/error") {
+      throw new Error("This is a test error to verify Cloudflare observability.");
+    }
+
     return new Response(null, { status: 404, headers: corsHeaders });
   },
 } satisfies ExportedHandler<Env>;

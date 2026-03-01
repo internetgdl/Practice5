@@ -25,6 +25,14 @@ function App() {
     }
   }
 
+  async function triggerError() {
+    try {
+      await fetch('/api/error');
+    } catch (e) {
+      console.error("Error endpoint called:", e);
+    }
+  }
+
   return (
     <div className="app-wrapper">
       <header className="app-header">
@@ -32,6 +40,9 @@ function App() {
           <span className="gradient-text">Profile</span> Hub
         </h1>
         <p className="app-subtitle">Capture and explore user profiles</p>
+        <button onClick={triggerError} style={{ marginTop: '1rem', backgroundColor: '#e74c3c' }} className="btn-primary">
+          Generate Test Error
+        </button>
       </header>
 
       <main className="app-grid">
