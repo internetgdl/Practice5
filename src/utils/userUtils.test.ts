@@ -1,5 +1,7 @@
-import { validateUserInput, createUser, deleteUser, resetIdCounter } from '../utils/userUtils'
-import type { User } from '../utils/userUtils'
+import { validateUserInput, createUser, deleteUser, fetchUsers } from '../utils/userUtils'
+
+const globalFetch = globalThis as any;
+globalFetch.fetch = jest.fn()
 
 describe('validateUserInput', () => {
     it('returns null when both fields are filled', () => {
@@ -24,59 +26,75 @@ describe('validateUserInput', () => {
 })
 
 describe('createUser', () => {
-    beforeEach(() => resetIdCounter())
-
-    it('trims whitespace from name and hobbies', () => {
-        const user = createUser('  Ana  ', '  coding  ')
-        expect(user.name).toBe('Ana')
-        expect(user.hobbies).toBe('coding')
+    beforeEach(() => {
+        (globalFetch.fetch as jest.Mock).mockClear()
     })
 
-    it('sets a numeric id', () => {
-        const user = createUser('Ana', 'coding')
-        expect(typeof user.id).toBe('number')
+    it('makes a POST request to create a user and trims inputs', async () => {
+        const mockResponse = { id: 1, name: 'Ana', hobbies: 'coding', created_at: '2026-03-01T00:00:00.000Z' }
+            ; (globalFetch.fetch as jest.Mock).mockResolvedValue({
+                ok: true,
+                json: async () => mockResponse
+            })
+
+        const user = await createUser('  Ana  ', '  coding  ')
+
+        expect(globalFetch.fetch).toHaveBeenCalledWith('/api/users', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'Ana', hobbies: 'coding' })
+        })
+        expect(user).toEqual(mockResponse)
     })
 
-    it('sets a valid ISO date string for created_at', () => {
-        const user = createUser('Ana', 'coding')
-        expect(() => new Date(user.created_at)).not.toThrow()
-        expect(new Date(user.created_at).toISOString()).toBe(user.created_at)
-    })
+    it('throws an error if the request fails', async () => {
+        ; (globalFetch.fetch as jest.Mock).mockResolvedValue({ ok: false })
 
-    it('generates unique ids for different calls', () => {
-        const user1 = createUser('Ana', 'coding')
-        const user2 = createUser('Carlos', 'painting')
-        expect(user1.id).toBe(1)
-        expect(user2.id).toBe(2)
+        await expect(createUser('Ana', 'coding')).rejects.toThrow('Failed to create user')
     })
 })
 
 describe('deleteUser', () => {
-    const users: User[] = [
-        { id: 1, name: 'Ana', hobbies: 'coding', created_at: '2026-02-25T00:00:00.000Z' },
-        { id: 2, name: 'Carlos', hobbies: 'painting', created_at: '2026-02-24T00:00:00.000Z' },
-        { id: 3, name: 'Luisa', hobbies: 'hiking', created_at: '2026-02-23T00:00:00.000Z' },
-    ]
-
-    it('removes the user with the given id', () => {
-        const result = deleteUser(users, 2)
-        expect(result.find((u) => u.id === 2)).toBeUndefined()
+    beforeEach(() => {
+        (globalFetch.fetch as jest.Mock).mockClear()
     })
 
-    it('keeps all other users', () => {
-        const result = deleteUser(users, 2)
-        expect(result).toHaveLength(2)
-        expect(result.find((u) => u.id === 1)).toBeDefined()
-        expect(result.find((u) => u.id === 3)).toBeDefined()
+    it('makes a DELETE request to remove a user', async () => {
+        ; (globalFetch.fetch as jest.Mock).mockResolvedValue({ ok: true })
+
+        await deleteUser(2)
+
+        expect(globalFetch.fetch).toHaveBeenCalledWith('/api/users/2', { method: 'DELETE' })
     })
 
-    it('returns the same array if id does not exist', () => {
-        const result = deleteUser(users, 99)
-        expect(result).toHaveLength(3)
+    it('throws an error if the request fails', async () => {
+        ; (globalFetch.fetch as jest.Mock).mockResolvedValue({ ok: false })
+
+        await expect(deleteUser(2)).rejects.toThrow('Failed to delete user')
+    })
+})
+
+describe('fetchUsers', () => {
+    beforeEach(() => {
+        (globalFetch.fetch as jest.Mock).mockClear()
     })
 
-    it('does not mutate the original array', () => {
-        deleteUser(users, 1)
-        expect(users).toHaveLength(3)
+    it('makes a GET request to fetch users', async () => {
+        const mockUsers = [{ id: 1, name: 'Ana', hobbies: 'coding' }]
+            ; (globalFetch.fetch as jest.Mock).mockResolvedValue({
+                ok: true,
+                json: async () => mockUsers
+            })
+
+        const users = await fetchUsers()
+
+        expect(globalFetch.fetch).toHaveBeenCalledWith('/api/users')
+        expect(users).toEqual(mockUsers)
+    })
+
+    it('throws an error if the request fails', async () => {
+        ; (globalFetch.fetch as jest.Mock).mockResolvedValue({ ok: false })
+
+        await expect(fetchUsers()).rejects.toThrow('Failed to fetch users')
     })
 })
