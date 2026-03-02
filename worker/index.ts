@@ -49,6 +49,42 @@ export default {
         });
       }
 
+      if (url.pathname === "/api/courses") {
+        if (request.method === "GET") {
+          const { results } = await env.DB.prepare("SELECT * FROM courses ORDER BY created_at DESC").all();
+          return new Response(JSON.stringify(results), {
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+          });
+        }
+
+        if (request.method === "POST") {
+          const body = await request.json() as { name: string, description: string };
+          if (!body.name || !body.description) {
+            return new Response(JSON.stringify({ error: "Name and description are required" }), {
+              status: 400,
+              headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
+          }
+          const result = await env.DB.prepare(
+            "INSERT INTO courses (name, description) VALUES (?, ?) RETURNING *"
+          ).bind(body.name.trim(), body.description.trim()).first();
+
+          return new Response(JSON.stringify(result), {
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+            status: 201
+          });
+        }
+      }
+
+      const deleteCourseMatch = url.pathname.match(/^\/api\/courses\/(\d+)$/);
+      if (deleteCourseMatch && request.method === "DELETE") {
+        const id = parseInt(deleteCourseMatch[1], 10);
+        await env.DB.prepare("DELETE FROM courses WHERE id = ?").bind(id).run();
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+      }
+
       if (url.pathname === "/api/error") {
         throw new Error("This is an unhandled internal test error to verify Cloudflare observability.");
       }
