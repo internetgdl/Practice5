@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,7 +22,11 @@ jobs:
         run: npm install
         
       - name: Test
-        run: npm run test -- --coverage
+        run: |
+          echo "## Jest Test Coverage 📊" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          npm run test -- --coverage --colors=false >> $GITHUB_STEP_SUMMARY 2>&1
+          echo '```' >> $GITHUB_STEP_SUMMARY
         continue-on-error: true
 
 
