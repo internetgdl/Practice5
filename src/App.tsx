@@ -1,25 +1,44 @@
 import { useState, useEffect } from 'react'
 import UserForm from './components/UserForm'
 import UserList from './components/UserList'
+import CourseForm from './components/CourseForm'
+import CourseList from './components/CourseList'
 import type { User } from './utils/userUtils'
+import type { Course } from './utils/courseUtils'
 import { fetchUsers, deleteUser } from './utils/userUtils'
+import { fetchCourses, deleteCourse } from './utils/courseUtils'
 import './App.css'
 
 function App() {
   const [users, setUsers] = useState<User[]>([])
+  const [courses, setCourses] = useState<Course[]>([])
 
   useEffect(() => {
     fetchUsers().then(setUsers).catch(console.error);
+    fetchCourses().then(setCourses).catch(console.error);
   }, []);
 
-  function handleSaved(user: User) {
+  function handleUserSaved(user: User) {
     setUsers((prev) => [user, ...prev])
   }
 
-  async function handleDelete(id: number) {
+  function handleCourseSaved(course: Course) {
+    setCourses((prev) => [course, ...prev])
+  }
+
+  async function handleUserDelete(id: number) {
     try {
       await deleteUser(id);
       setUsers((prev) => prev.filter(u => u.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async function handleCourseDelete(id: number) {
+    try {
+      await deleteCourse(id);
+      setCourses((prev) => prev.filter(c => c.id !== id));
     } catch (e) {
       console.error(e);
     }
@@ -37,17 +56,23 @@ function App() {
     <div className="app-wrapper">
       <header className="app-header">
         <h1>
-          <span className="gradient-text">Profile</span> Hub
+          <span className="gradient-text">Profile</span> & <span className="gradient-text">Course</span> Hub
         </h1>
-        <p className="app-subtitle">Capture and explore user profiles</p>
+        <p className="app-subtitle">Capture and explore user profiles and system courses</p>
         <button onClick={triggerError} style={{ marginTop: '1rem', backgroundColor: '#e74c3c' }} className="btn-primary">
           Generate Test Error
         </button>
       </header>
 
       <main className="app-grid">
-        <UserForm onSaved={handleSaved} />
-        <UserList users={users} onDelete={handleDelete} />
+        <section className="dashboard-section">
+          <UserForm onSaved={handleUserSaved} />
+          <UserList users={users} onDelete={handleUserDelete} />
+        </section>
+        <section className="dashboard-section">
+          <CourseForm onSaved={handleCourseSaved} />
+          <CourseList courses={courses} onDelete={handleCourseDelete} />
+        </section>
       </main>
     </div>
   )
