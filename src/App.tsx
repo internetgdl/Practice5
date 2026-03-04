@@ -3,8 +3,11 @@ import UserForm from './components/UserForm'
 import UserList from './components/UserList'
 import CourseForm from './components/CourseForm'
 import CourseList from './components/CourseList'
+import PhoneForm from './components/PhoneForm'
+import PhoneList from './components/PhoneList'
 import type { User } from './utils/userUtils'
 import type { Course } from './utils/courseUtils'
+import type { Phone } from './utils/phoneUtils'
 import { fetchUsers, deleteUser } from './utils/userUtils'
 import { fetchCourses, deleteCourse } from './utils/courseUtils'
 import './App.css'
@@ -12,6 +15,7 @@ import './App.css'
 function App() {
   const [users, setUsers] = useState<User[]>([])
   const [courses, setCourses] = useState<Course[]>([])
+  const [phones, setPhones] = useState<Phone[]>([])
 
   useEffect(() => {
     fetchUsers().then(setUsers).catch(console.error);
@@ -24,6 +28,10 @@ function App() {
 
   function handleCourseSaved(course: Course) {
     setCourses((prev) => [course, ...prev])
+  }
+
+  function handlePhoneSaved(phone: Phone) {
+    setPhones((prev) => [phone, ...prev])
   }
 
   async function handleUserDelete(id: number) {
@@ -42,6 +50,10 @@ function App() {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  function handlePhoneDelete(id: number) {
+    setPhones((prev) => prev.filter(p => p.id !== id));
   }
 
   async function triggerError() {
@@ -72,6 +84,10 @@ function App() {
         <section className="dashboard-section">
           <CourseForm onSaved={handleCourseSaved} />
           <CourseList courses={courses} onDelete={handleCourseDelete} />
+        </section>
+        <section className="dashboard-section">
+          <PhoneForm onSaved={handlePhoneSaved} />
+          <PhoneList phones={phones} onDelete={handlePhoneDelete} />
         </section>
       </main>
     </div>
