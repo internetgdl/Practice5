@@ -5,9 +5,12 @@ import CourseForm from './components/CourseForm'
 import CourseList from './components/CourseList'
 import PhoneForm from './components/PhoneForm'
 import PhoneList from './components/PhoneList'
+import BookForm from './components/BookForm'
+import BookList from './components/BookList'
 import type { User } from './utils/userUtils'
 import type { Course } from './utils/courseUtils'
 import type { Phone } from './utils/phoneUtils'
+import type { Book } from './utils/bookUtils'
 import { fetchUsers, deleteUser } from './utils/userUtils'
 import { fetchCourses, deleteCourse } from './utils/courseUtils'
 import './App.css'
@@ -16,6 +19,7 @@ function App() {
   const [users, setUsers] = useState<User[]>([])
   const [courses, setCourses] = useState<Course[]>([])
   const [phones, setPhones] = useState<Phone[]>([])
+  const [books, setBooks] = useState<Book[]>([])
 
   useEffect(() => {
     fetchUsers().then(setUsers).catch(console.error);
@@ -32,6 +36,10 @@ function App() {
 
   function handlePhoneSaved(phone: Phone) {
     setPhones((prev) => [phone, ...prev])
+  }
+
+  function handleBookSaved(book: Book) {
+    setBooks((prev) => [book, ...prev])
   }
 
   async function handleUserDelete(id: number) {
@@ -54,6 +62,10 @@ function App() {
 
   function handlePhoneDelete(id: number) {
     setPhones((prev) => prev.filter(p => p.id !== id));
+  }
+
+  function handleBookDelete(id: number) {
+    setBooks((prev) => prev.filter(b => b.id !== id));
   }
 
   async function triggerError() {
@@ -88,6 +100,10 @@ function App() {
         <section className="dashboard-section">
           <PhoneForm onSaved={handlePhoneSaved} />
           <PhoneList phones={phones} onDelete={handlePhoneDelete} />
+        </section>
+        <section className="dashboard-section">
+          <BookForm onSaved={handleBookSaved} />
+          <BookList books={books} onDelete={handleBookDelete} />
         </section>
       </main>
     </div>
